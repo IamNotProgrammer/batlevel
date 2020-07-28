@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Sends notification to plug in or off charger from laptop
+# Checks only for BAT0 from /sys/class/power_supply/
+
+# maximal energy in battery
+enf=$(cat /sys/class/power_supply/BAT0/energy_full)
+
+# notify at these levels
+btlow=29
+bthigh=91
+
+# check every n seconds
+time=30
+
+while [ 1 ]
+	do
+	
+	# current energy, charging/discharging, energy level in %
+	enc=$(cat /sys/class/power_supply/BAT0/energy_now) ;
+	state=$(cat /sys/class/power_supply/BAT0/status) ;
+	lvl=$(printf "%d" $(($enc * 100 / $enf)))
+
+	if [ $lvl -lt $btlow ] && [ $state == 'Discharging' ]
+		then
+		notify-send "Low battery" "Battery level: $lvl%"
+
+	elif [ $lvl -gt $bthigh ] && [ $state == 'Charging' ]
+		then
+		notify-send "Battery charged" "Battery level: $lvl%"
+
+	fi
+
+	sleep $time
+
+	done
+
+
